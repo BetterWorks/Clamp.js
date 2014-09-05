@@ -1,5 +1,5 @@
 /*!
-* Clamp.js 0.6.1
+* Clamp.js 0.6.2-bw
 *
 * Copyright 2011-2013, Joseph Schmitt http://joe.sh
 * Released under the WTFPL license
@@ -199,7 +199,7 @@
         }
         else {
             var height = getMaxHeight(clampValue);
-            if (height <= getElemHeight(element)) {
+            if (height < getElemHeight(element)) {
                 truncate(getLastTextNode(element), height);
                 clampedText = element.innerHTML;
             }
