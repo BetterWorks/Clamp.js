@@ -1,10 +1,10 @@
 /*!
-* Clamp.js 0.6.1
-*
-* Copyright 2011-2013, Joseph Schmitt http://joe.sh
-* Released under the WTFPL license
-* http://sam.zoy.org/wtfpl/
-*/
+ * Clamp.js 0.6.2-bw
+ *
+ * Copyright 2011-2013, Joseph Schmitt http://joe.sh
+ * Released under the WTFPL license
+ * http://sam.zoy.org/wtfpl/
+ */
 
 (function(){
     /**
@@ -21,7 +21,7 @@
                 clamp:              options.clamp || 2,
                 useNativeClamp:     typeof(options.useNativeClamp) != 'undefined' ? options.useNativeClamp : true,
                 truncationChar:     options.truncationChar || '…',
-				removeTrailingChars: options.removeTrailingChars || ',.;:!?-'
+                removeTrailingChars: options.removeTrailingChars || ',.;:!?-'
             },
 
             sty = element.style,
@@ -30,7 +30,7 @@
             supportsNativeClamp = typeof(element.style.webkitLineClamp) != 'undefined',
             clampValue = opt.clamp,
             isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1);
-            
+
 // UTILITY FUNCTIONS __________________________________________________________
 
         /**
@@ -88,90 +88,91 @@
             if (lh == 'normal') {
                 // Normal line heights vary from browser to browser. The spec recommends
                 // a value between 1.0 and 1.2 of the font size. Using 1.1 to split the diff.
-                lh = parseInt(computeStyle(elem, 'font-size')) * 1.2;
+                lh = parseInt(computeStyle(elem, 'font-size'), 10) * 1.2;
             }
-            return parseInt(lh);
+            return parseInt(lh, 10);
         }
-		
-		/**
+
+        /**
          * Returns the height of an element as an integer (max of scroll/offset/client).
-		 * Note: inline elements return 0 for scrollHeight and clientHeight
+         * Note: inline elements return 0 for scrollHeight and clientHeight
          */
         function getElemHeight(elem) {
             return Math.max(elem.scrollHeight, elem.offsetHeight, elem.clientHeight);
         }
-        
+
         /**
          * Gets an element's last text node. This will remove empty elements from the end.
          */
         function getLastTextNode(elem) {
-        	// if we have children, search inside the last one
-        	if (elem.lastChild) {
-        		return getLastTextNode(elem.lastChild);
-        	}
-        	
-        	//we don't have children, and this is the root => we can't find anything here 
-        	if (elem == element) {
-        		return null;
-        	}
-        	
-        	// we don't have children, but this is not a text node, or it is empty => remove it and try again
-        	if (elem.nodeType !== 3 || !elem.nodeValue.trim() || elem.nodeValue == opt.truncationChar) {
-    			elem.parentNode.removeChild(elem);
-    			return getLastTextNode(elem.parentNode);
-        	}
-        	
-        	//we found a child of type text with actual content
-        	return elem;
+            // if we have children, search inside the last one
+            if (elem.lastChild) {
+                return getLastTextNode(elem.lastChild);
+            }
+
+            //we don't have children, and this is the root => we can't find anything here
+            if (elem == element) {
+                return null;
+            }
+
+            // we don't have children, but this is not a text node, or it is empty => remove it and try again
+            if (elem.nodeType !== 3 || !elem.nodeValue.trim() || elem.nodeValue == opt.truncationChar) {
+                var parent = elem.parentNode;
+                parent.removeChild(elem);
+                return getLastTextNode(parent);
+            }
+
+            //we found a child of type text with actual content
+            return elem;
         }
-		
+
 
 
 // MEAT AND POTATOES (MMMM, POTATOES...) ______________________________________
-        
-        
+
+
         /**
          * Does a binary search over the words in the elements text until it finds the last one that fits in the maximum height
          */
         function truncate(target, maxHeight) {
             if (!target || !maxHeight) {return;}
-            
+
             var original = target.nodeValue.replace(opt.truncationChar, '');
-            
+
             var words = original.split(' ');
-            
+
             var start=0, end = words.length-1, mid=-1, m;
-            
+
             while (start <= end && end > 0) {
-            	m = Math.floor((start+end)/2);
-            	if (m == mid) {
-            		break;
-            	}
-            	mid= m;
-            	
-            	applyEllipsis(target, words.slice(0, mid+1).join(' '));
-            	
-            	height = getElemHeight(element);
-            	
-            	
-            	if (height <= maxHeight) {
-            		start = mid;
-            	} else {
-            		end = mid;
-            	}
+                m = Math.floor((start+end)/2);
+                if (m == mid) {
+                    break;
+                }
+                mid= m;
+
+                applyEllipsis(target, words.slice(0, mid+1).join(' '));
+
+                height = getElemHeight(element);
+
+
+                if (height <= maxHeight) {
+                    start = mid;
+                } else {
+                    end = mid;
+                }
             }
-            
+
             if (height > maxHeight) {
-            	target.parentNode.removeChild(target);
-            	truncate(getLastTextNode(element), maxHeight);
+                target.parentNode.removeChild(target);
+                truncate(getLastTextNode(element), maxHeight);
             }
         }
-        
+
         function applyEllipsis(elem, str) {
-        	while (str.length && opt.removeTrailingChars.indexOf(str[str.length-1]) != -1) {
-            	str = str.substring(0, str.length -1);
+            while (str.length && opt.removeTrailingChars.indexOf(str[str.length-1]) != -1) {
+                str = str.substring(0, str.length -1);
             }
-        	
+
             elem.nodeValue = str + opt.truncationChar;
         }
 
@@ -182,7 +183,7 @@
             clampValue = getMaxLines();
         }
         else if (isCSSValue) {
-            clampValue = getMaxLines(parseInt(clampValue));
+            clampValue = getMaxLines(parseInt(clampValue, 10));
         }
 
         var clampedText;
@@ -199,12 +200,12 @@
         }
         else {
             var height = getMaxHeight(clampValue);
-            if (height <= getElemHeight(element)) {
+            if (height < getElemHeight(element)) {
                 truncate(getLastTextNode(element), height);
                 clampedText = element.innerHTML;
             }
         }
-        
+
         return {
             'original': originalText,
             'clamped': clampedText
