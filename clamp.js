@@ -117,8 +117,9 @@
 
             // we don't have children, but this is not a text node, or it is empty => remove it and try again
             if (elem.nodeType !== 3 || !elem.nodeValue.trim() || elem.nodeValue == opt.truncationChar) {
-                elem.parentNode.removeChild(elem);
-                return getLastTextNode(elem.parentNode);
+                var parent = elem.parentNode;
+                parent.removeChild(elem);
+                return getLastTextNode(parent);
             }
 
             //we found a child of type text with actual content
